@@ -40,7 +40,7 @@ contract("Token Test", async (accounts) => {
         expect(instance.transfer(recipient, sendTokens)).to.eventually.be.fulfilled; //토큰 1개 전송이 이루어지길. 
         expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(totalSupply.sub(new BN(sendTokens))); 
                                                         //sendTokens를 여기에 못넣음, 빅넘버에서 빅넘버 빼는거니깐(totalsupply도 빅넘버)
-        expect(instance.balanceOf(recipient)).to.eventually.be.a.bignumber.equal(new BN(sendTokens)); //전송되는 토큰의 양이 새로은 빅넘버와 같음
+        expect(instance.balanceOf(recipient)).to.eventually.be.a.bignumber.equal(new BN(sendTokens)+1); //전송되는 토큰의 양이 새로은 빅넘버와 같음
 
     })
 
@@ -49,6 +49,9 @@ contract("Token Test", async (accounts) => {
         let balanceOfDeployer = await instance.balanceOf(deployerAccount); //초기 인스턴스
 
         expect(instance.transfer(recipient, new BN(balanceOfDeployer+1)).to.eventually.be.rejected); //거부당할 것을 기대하고 +1
+        
+        expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(balanceOfDeployer);
+        //밸런스가 같거나 or DeployerAccount의 밸런스가 결과적으로 빅넘버가 되어, balanceOfDeployer
     })
 
 }); 
