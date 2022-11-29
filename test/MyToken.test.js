@@ -1,20 +1,18 @@
 const Token = artifacts.require("MyToken");
 
-var chai = require("chai"); //여길로 노드 모듈  폴더에 요청
+// var chai = require("chai"); //여길로 노드 모듈  폴더에 요청
+// // require('../configure')();
+// // const web3 = require('./config/web3').getWeb3();
+// const BN = web3.utils.BN;
+// const chaiBN = require("chai-bn")(BN);
+// chai.use(chaiBN);
+// var chaiAsPromised = require("chai-as-promised");
+// chai.use(chaiAsPromised);
+// const expect = chai.expect;
 
 require("dotenv").config({path: "../.env"});
-
-// require('../configure')();
-
-// const web3 = require('./config/web3').getWeb3();
-
+const chai = require("./setupchai.js");
 const BN = web3.utils.BN;
-const chaiBN = require("chai-bn")(BN);
-chai.use(chaiBN);
-
-var chaiAsPromised = require("chai-as-promised");
-chai.use(chaiAsPromised);
-
 const expect = chai.expect;
 
 contract("Token Test", async (accounts) => {
@@ -36,7 +34,7 @@ contract("Token Test", async (accounts) => {
         //assert.equal(balance.valueOf(),  initialSupply.valueOf(), "The balance was not the same" );
         //위 대신 아래를 선호함
         //일반적으로 밸랜스를 사용하면 항상 await 키워드가 있음.
-        expect(await instance.balanceOf(deployerAccount)).to.be.a.bignumber.equal(totalSupply);
+        return expect(await instance.balanceOf(deployerAccount)).to.be.a.bignumber.equal(totalSupply);
     })
     //it 두번째 매개변수로는 async 콜백함수
 
@@ -49,18 +47,18 @@ contract("Token Test", async (accounts) => {
         expect(instance.transfer(recipient, sendTokens)).to.eventually.be.fulfilled; //토큰 1개 전송이 이루어지길. 
         expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(totalSupply.sub(new BN(sendTokens))); 
                                                         //sendTokens를 여기에 못넣음, 빅넘버에서 빅넘버 빼는거니깐(totalsupply도 빅넘버)
-        expect(instance.balanceOf(recipient)).to.eventually.be.a.bignumber.equal(new BN(sendTokens)+1); //전송되는 토큰의 양이 새로은 빅넘버와 같음
+        return expect(instance.balanceOf(recipient)).to.eventually.be.a.bignumber.equal(new BN(sendTokens)+1); //전송되는 토큰의 양이 새로은 빅넘버와 같음
 
     })
 
-    it("is not possible to send more tokens than available in totla", async () => {
+    it("is not possible to send more tokens than available in total", async () => {
         //let instance = await Token.deployed();
         let instance = this.myToken;
         let balanceOfDeployer = await instance.balanceOf(deployerAccount); //초기 인스턴스
 
-        expect(instance.transfer(recipient, new BN(balanceOfDeployer+1)).to.eventually.be.rejected); //거부당할 것을 기대하고 +1
+        expect(instance.transfer(recipient, new BN(balanceOfDeployer)).to.eventually.be.rejected); //거부당할 것을 기대하고 +1
         
-        expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(balanceOfDeployer);
+        return expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(balanceOfDeployer);
         //밸런스가 같거나 or DeployerAccount의 밸런스가 결과적으로 빅넘버가 되어, balanceOfDeployer
     })
 
