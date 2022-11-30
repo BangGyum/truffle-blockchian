@@ -1,16 +1,22 @@
 import React, { Component } from "react";
-import CounterContract from "./contracts/Counter.json";
+// import CounterContract from "./contracts/Counter.json";
+
+import MyToken from "./contracts/MyToken.json";
+import MyTokenSale from "./contracts/MyTokenSale.json";
+import Kyc from "./contracts/KycContract.json";
+import "./App.css";
 import getWeb3 from "./getWeb3";
 
-import "./App.css";
 
 class App extends Component {
-  state = {loaded:false, count: 0, accounts: null, contract: null };
+  //state = {loaded:false, count: 0, accounts: null, contract: null };
+  state = { loaded:false, kycAddress:"0x123..." }; //앱 로딩상태 확인, 처음은 false
 
   componentDidMount = async () => {
     try {
       // Get network provider and web3 instance.
       this.web3 = await getWeb3();
+      //스토리지나 스테이트 변수가 아닌, 클래스 변수
 
       // Use web3 to get the user's accounts.
       this.accounts = await this.web3.eth.getAccounts();
@@ -18,8 +24,20 @@ class App extends Component {
       // Get the contract instance.
       this.networkId = await this.web3.eth.net.getId();
     
-       this.counter = new this.web3.eth.Contract(
-         CounterContract.abi,  CounterContract.networks[this.networkId] &&  CounterContract.networks[this.networkId].address
+      //밑에가 instance 인듯
+      //  this.counter = new this.web3.eth.Contract(
+      //    CounterContract.abi,  CounterContract.networks[this.networkId] &&  CounterContract.networks[this.networkId].address
+      this.tokenInstance = new this.web3.eth.Contract(
+          MyToken.abi
+          , MyToken.networks[this.networkId] &&  MyToken.networks[this.networkId].address
+      );
+      this.tokenSaleInstance = new this.web3.eth.Contract(
+        MyTokenSale.abi
+        , MyTokenSale.networks[this.networkId] &&  MyTokenSale.networks[this.networkId].address
+      );
+      this.kycInstance = new this.web3.eth.Contract(
+        Kyc.abi
+        , Kyc.networks[this.networkId] &&  Kyc.networks[this.networkId].address
       );
 
       // Set web3, accounts, and contract to the state, and then proceed with an
@@ -33,12 +51,13 @@ class App extends Component {
       console.error(error);
     }
   };
-
+ //우리는 단순 스토리지 계약을 위한 거라 
   runExample = async () => {
     // Get the value from the contract to prove it worked.
     const response = await this.counter.methods.ViewCount().call();
     // Update state with the result.
-    this.setState({count: response})
+    //this.setState({count: response})
+    this.setState({})
   };
 
   handleIncrease = async() => {
@@ -51,15 +70,35 @@ class App extends Component {
     await this.runExample()
   }
 
+  HandleInputChange = (event) => {
+    const target = event.target; //이벤트 타켓 가져옴
+    const value = target.type === "checkbox" ? target.checked : target.value;
+    const name = target.name;
+    this.setState({
+      [name]: value
+    })
+    //우리코드엔 체크박스 없지만 걍 일반적 기능임
+  }
+  
+  handleKycWhitelisting=async() => { //Kyc 게약을 가져옴, KycContract의 setKycCompleted 호출
+    await this.kycInstance.setKycCompleted(this.state.kycAddress).send({from: this.accounts[0]});
+    alert("KYC for " + this.state.kycAddress +"is completed");
+
+  }
+
   render() {
     if (!this.state.loaded) {
       return <div>Loading Count...</div>;
     }
     return (
       <div className="App">
-        <h1>Counts</h1>
-        <h2>{this.state.count}</h2>
-        <button onClick={this.handleIncrease}>Increment count</button><button onClick={this.handleReduce}>decrement count</button>
+        <h1>StarDucks Cappucino Token Sale</h1>
+        <p>Get your Tokens Today!</p>
+        <h2>Kyc WhiteListing</h2>
+        Address to allow: <input type="text" name="KycAddress" value={this.state.kycAddress} onChange={this.HandleInputChange} />
+        <p>value가 흥미롭대, state 외부로 아직 정의하지 않아서</p>
+        <p>HandleInputChange</p>
+        <button type="button" onClick={this.handleKycWhitelisting}>Add to Whitelist</button>
       </div>
     );
   }
