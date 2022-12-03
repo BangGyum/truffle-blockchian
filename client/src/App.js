@@ -10,7 +10,7 @@ import getWeb3 from "./getWeb3";
 
 class App extends Component {
   //state = {loaded:false, count: 0, accounts: null, contract: null };
-  state = { loaded:false, kycAddress:"0x123..." }; //앱 로딩상태 확인, 처음은 false
+  state = { loaded:false, kycAddress:"0x123...", tokenSaleAddress : null,tokenAddress : null ,userTokens:0 }; //앱 로딩상태 확인, 처음은 false
 
   componentDidMount = async () => {
     try {
@@ -42,7 +42,9 @@ class App extends Component {
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ loaded:true });
+      this.setState({ loaded:true,
+             tokenSaleAddress : MyTokenSale.networks[this.networkId].address ,
+            } ,this.updateUserTokens );
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -54,7 +56,7 @@ class App extends Component {
  //우리는 단순 스토리지 계약을 위한 거라 
   runExample = async () => {
     // Get the value from the contract to prove it worked.
-    const response = await this.counter.methods.ViewCount().call();
+    //const response = await this.counter.methods.ViewCount().call();
     // Update state with the result.
     //this.setState({count: response})
     this.setState({})
@@ -79,9 +81,18 @@ class App extends Component {
     })
     //우리코드엔 체크박스 없지만 걍 일반적 기능임
   }
+  handleBuyTokens = async() => {
+    await this.tokenInstance.methods.buyTokens(this.accounts[0]).send({
+          from: this.accounts[0], value: this.web3.utils.toWei("1","wei")});
+  }
+
+  updateUserTokens = async() => {
+    let userTokens = await this.tokenInstance.methods.balanceOf(this.accounts[0]).call() ; //call은 읽기, send는 쓰기
+    this.setState({userTokens: userTokens});
+  }
   
   handleKycWhitelisting=async() => { //Kyc 게약을 가져옴, KycContract의 setKycCompleted 호출
-    await this.kycInstance.setKycCompleted(this.state.kycAddress).send({from: this.accounts[0]});
+    await this.kycInstance.methods.setKycCompleted(this.state.kycAddress).send({from: this.accounts[0]});
     alert("KYC for " + this.state.kycAddress +"is completed");
 
   }
@@ -95,10 +106,15 @@ class App extends Component {
         <h1>StarDucks Cappucino Token Sale</h1>
         <p>Get your Tokens Today!</p>
         <h2>Kyc WhiteListing</h2>
-        Address to allow: <input type="text" name="KycAddress" value={this.state.kycAddress} onChange={this.HandleInputChange} />
+        Address to allow: 
+        <input type="text" name="kycAddress" value={this.state.kycAddress} onChange={this.HandleInputChange} />
         <p>value가 흥미롭대, state 외부로 아직 정의하지 않아서</p>
         <p>HandleInputChange</p>
         <button type="button" onClick={this.handleKycWhitelisting}>Add to Whitelist</button>
+        <p>if you want to buy tokens, send Wei to this address: {this.state.tokenSaleAddress}</p>
+        <p>a{this.state.tokenSaleAddress}</p>
+        <p>You currently have: {this.state.userTokens} CAPPU tokens</p>
+        <button type="button">Buy more tokens</button>
       </div>
     );
   }

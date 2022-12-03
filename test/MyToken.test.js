@@ -56,7 +56,7 @@ contract("Token Test", async (accounts) => {
         let instance = this.myToken;
         let balanceOfDeployer = await instance.balanceOf(deployerAccount); //초기 인스턴스
 
-        expect(instance.transfer(recipient, new BN(balanceOfDeployer)).to.eventually.be.rejected); //거부당할 것을 기대하고 +1
+        expect(instance.transfer(recipient, new BN(balanceOfDeployer)).to.eventually.be.a.rejected); //거부당할 것을 기대하고 +1
         
         return expect(instance.balanceOf(deployerAccount)).to.eventually.be.a.bignumber.equal(balanceOfDeployer);
         //밸런스가 같거나 or DeployerAccount의 밸런스가 결과적으로 빅넘버가 되어, balanceOfDeployer
