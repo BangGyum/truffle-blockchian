@@ -82,7 +82,7 @@ class App extends Component {
     //우리코드엔 체크박스 없지만 걍 일반적 기능임
   }
   handleBuyTokens = async() => {
-    await this.tokenInstance.methods.buyTokens(this.accounts[0]).send({
+    await this.tokenSaleInstance.methods.buyTokens(this.accounts[0]).send({
           from: this.accounts[0], value: this.web3.utils.toWei("1","wei")});
   }
 
@@ -94,8 +94,8 @@ class App extends Component {
   handleKycWhitelisting=async() => { //Kyc 게약을 가져옴, KycContract의 setKycCompleted 호출
     await this.kycInstance.methods.setKycCompleted(this.state.kycAddress).send({from: this.accounts[0]});
     alert("KYC for " + this.state.kycAddress +"is completed");
-
   }
+
 
   render() {
     if (!this.state.loaded) {
@@ -114,7 +114,7 @@ class App extends Component {
         <p>if you want to buy tokens, send Wei to this address: {this.state.tokenSaleAddress}</p>
         <p>a{this.state.tokenSaleAddress}</p>
         <p>You currently have: {this.state.userTokens} CAPPU tokens</p>
-        <button type="button">Buy more tokens</button>
+        <button type="button" onClick={this.handleBuyTokens}>Buy more tokens</button>
       </div>
     );
   }
